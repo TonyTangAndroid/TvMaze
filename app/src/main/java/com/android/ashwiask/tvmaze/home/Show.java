@@ -28,6 +28,7 @@ public class Show
     private ExternalInfo externalInfo;
     private String summary;
     private Map<String, Double> rating;
+    private Schedule schedule;
 
     public long getId()
     {
@@ -102,5 +103,10 @@ public class Show
     public Map<String, Double> getRating()
     {
         return rating;
+    }
+
+    public Schedule getSchedule()
+    {
+        return schedule;
     }
 }

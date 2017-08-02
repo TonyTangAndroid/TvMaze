@@ -105,7 +105,6 @@ dependencies {
     compile "com.squareup.okhttp3:logging-interceptor:$okhttpVersion"
 
     compile 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
-    compile "com.google.code.gson:gson:2.8.0"
 
     compile 'com.google.dagger:dagger:2.11'
     kapt 'com.google.dagger:dagger-compiler:2.11'
