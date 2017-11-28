@@ -9,7 +9,7 @@ import android.view.View;
  */
 public class GridItemDecoration extends RecyclerView.ItemDecoration
 {
-    private int space;
+    private int   space;
     private int noOfColumns;
 
     public GridItemDecoration(int space, int noOfColumns)
