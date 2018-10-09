@@ -1,69 +1,78 @@
 package com.android.ashwiask.tvmaze.home;
 
+import android.support.annotation.Nullable;
+
+import com.google.auto.value.AutoValue;
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+
 /**
  * @author Ashwini Kumar.
  */
-
-public class Episode
-{
-    private Show show;
-    private long id;
-    private String url;
-    private String name;
-    private int season;
-    private int number;
-    private String airdate;
-    private String airtime;
-    private int runtime;
-    private String summary;
-
-    public Show getShow()
-    {
-        return show;
+@AutoValue
+public abstract class Episode {
+    public static TypeAdapter<Episode> typeAdapter(Gson gson) {
+        return new AutoValue_Episode.GsonTypeAdapter(gson);
     }
 
-    public long getId()
-    {
-        return id;
+    public static Builder builder() {
+        return new AutoValue_Episode.Builder();
     }
 
-    public String getUrl()
-    {
-        return url;
-    }
+    public abstract Show show();
 
-    public String getName()
-    {
-        return name;
-    }
+    public abstract long id();
 
-    public int getSeason()
-    {
-        return season;
-    }
+    @Nullable
+    public abstract String url();
 
-    public int getNumber()
-    {
-        return number;
-    }
+    @Nullable
+    public abstract String name();
 
-    public String getAirdate()
-    {
-        return airdate;
-    }
+    public abstract int season();
 
-    public String getAirtime()
-    {
-        return airtime;
-    }
+    public abstract int number();
 
-    public int getRuntime()
-    {
-        return runtime;
-    }
+    @Nullable
+    public abstract String airdate();
 
-    public String getSummary()
-    {
-        return summary;
+    @Nullable
+    public abstract String airtime();
+
+    public abstract int runtime();
+
+    @Nullable
+    public abstract String summary();
+
+    public abstract Builder toBuilder();
+
+    @AutoValue.Builder
+    public static abstract class Builder {
+        public abstract Builder show(Show show);
+
+        public abstract Builder id(long id);
+
+        @Nullable
+        public abstract Builder url(String url);
+
+        @Nullable
+        public abstract Builder name(String name);
+
+        public abstract Builder season(int season);
+
+        public abstract Builder number(int number);
+
+        @Nullable
+        public abstract Builder airdate(String airdate);
+
+        @Nullable
+        public abstract Builder airtime(String airtime);
+
+        public abstract Builder runtime(int runtime);
+
+        @Nullable
+        public abstract Builder summary(String summary);
+
+        public abstract Episode build();
     }
 }

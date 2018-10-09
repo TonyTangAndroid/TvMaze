@@ -1,85 +1,127 @@
 package com.android.ashwiask.tvmaze.home;
 
-import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.android.ashwiask.tvmaze.R;
+import com.android.ashwiask.tvmaze.databinding.ShowListItemBinding;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.request.RequestOptions;
 
+import java.util.Collections;
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 /**
  * @author Ashwini Kumar.
  */
 
-public class ShowsAdapter extends RecyclerView.Adapter<ShowsAdapter.ShowHolder>
-{
-    private static final String MEDIUM_IMAGE = "medium";
-    private List<Episode> episodes;
-    private Context context;
+public class ShowsAdapter extends RecyclerView.Adapter<ShowsAdapter.ShowHolder> {
+    private static final String ORIGINAL_IMAGE = "original";
+    private List<Show> shows;
+    private final Callback callback;
 
-    public ShowsAdapter(List<Episode> episodes)
-    {
-        this.episodes = episodes;
+    ShowsAdapter(Callback callback) {
+        this.callback = callback;
+        shows = Collections.emptyList();
     }
 
+    public void updateList(List<Show> newList) {
+        ShowDiffUtilCallback showDiffUtilCallback = new ShowDiffUtilCallback(shows, newList);
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(showDiffUtilCallback);
+        shows = newList;
+        diffResult.dispatchUpdatesTo(this);
+    }
+
+    @NonNull
     @Override
-    public ShowHolder onCreateViewHolder(ViewGroup parent, int viewType)
-    {
-        context = parent.getContext();
-        View view = LayoutInflater.from(context).inflate(R.layout.show_list_item, parent, false);
-        ShowHolder showHolder = new ShowHolder(view);
+    public ShowHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
+        ShowListItemBinding showListItemBinding = ShowListItemBinding
+                .inflate(layoutInflater, parent, false);
+        ShowHolder showHolder = new ShowHolder(showListItemBinding);
+        showHolder.binding.favorite.setOnClickListener(v ->
+                onFavouriteIconClicked(showHolder.getAdapterPosition()));
         return showHolder;
     }
 
-    @Override
-    public void onBindViewHolder(ShowHolder holder, int position)
-    {
-        Episode episode = episodes.get(position);
-        Show show = episode.getShow();
-        holder.showTitle.setText(show.getName());
-        holder.episodeTitle.setText(episode.getName());
-        configureImage(holder, show);
-    }
-
-    private void configureImage(ShowHolder holder, Show show)
-    {
-        if (show.getImage() != null)
-        {
-            Glide.with(context).load(show.getImage().get(MEDIUM_IMAGE)).placeholder(R.color.grey).into(holder.showImage);
-        } else
-        {
-            // do nothing
+    private void onFavouriteIconClicked(int position) {
+        if (position != RecyclerView.NO_POSITION) {
+            Show show = shows.get(position);
+            show = show.toBuilder().isFavorite(!show.isFavorite())
+                    .build();
+            shows.set(position, show);
+            notifyItemChanged(position);
+            callback.onFavoriteClicked(show);
         }
     }
 
     @Override
-    public int getItemCount()
-    {
-        return episodes.size();
+    public void onBindViewHolder(@NonNull ShowHolder holder, int position) {
+        Show show = shows.get(position);
+        configureImage(holder.binding.showImage, show);
+        configureFavoriteIcon(holder.binding.favorite, show.isFavorite());
     }
 
-    public static class ShowHolder extends RecyclerView.ViewHolder
-    {
-        @BindView(R.id.show_title)
-        TextView showTitle;
-        @BindView(R.id.episode_title)
-        TextView episodeTitle;
-        @BindView(R.id.show_image)
-        ImageView showImage;
-
-        ShowHolder(View itemView)
-        {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
+    @Override
+    public void onBindViewHolder(@NonNull ShowHolder holder, int position,
+                                 @NonNull List<Object> payloads) {
+        if (!payloads.isEmpty()) {
+            Bundle bundle = (Bundle) payloads.get(0);
+            boolean isFavorite = bundle.getBoolean("IS_FAVORITE");
+            configureFavoriteIcon(holder.binding.favorite, isFavorite);
+        } else {
+            onBindViewHolder(holder, position);
         }
+    }
+
+    private void configureFavoriteIcon(ImageView favoriteIcon, boolean favorite) {
+        if (favorite) {
+            Drawable favoriteDrawable = AppCompatResources
+                    .getDrawable(favoriteIcon.getContext(), R.drawable.favorite);
+            favoriteIcon.setImageDrawable(favoriteDrawable);
+        } else {
+            Drawable unFavoriteDrawable = AppCompatResources
+                    .getDrawable(favoriteIcon.getContext(), R.drawable.favorite_border);
+            favoriteIcon.setImageDrawable(unFavoriteDrawable);
+        }
+    }
+
+    private void configureImage(ImageView showImage, Show show) {
+        if (show.image() != null) {
+            Glide.with(showImage.getContext()).load(show.image().get(ORIGINAL_IMAGE))
+                    .apply(RequestOptions.placeholderOf(R.color.grey))
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(showImage);
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return shows.size();
+    }
+
+    public List<Show> getShows() {
+        return shows;
+    }
+
+    static class ShowHolder extends RecyclerView.ViewHolder {
+        private ShowListItemBinding binding;
+
+        ShowHolder(ShowListItemBinding itemBinding) {
+            super(itemBinding.getRoot());
+            this.binding = itemBinding;
+        }
+    }
+
+    public interface Callback {
+        void onFavoriteClicked(Show show);
     }
 }
